@@ -1,5 +1,7 @@
 package com.cos.jwt.config.jwt;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.cos.jwt.config.auth.PrincipalDetails;
 import com.cos.jwt.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,6 +101,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         HttpServletResponse response, FilterChain chain, Authentication authResult)
         throws IOException, ServletException {
         System.out.println("successfulAuthentication 실행됨 : 인증이 완료되었다는 뜻임");
+
+        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+
+        // RSA 방식은 아니고 Hash 암호방식
+        // 이 방식이 RSA보다 더 많이 사용됨?
+        String jwtToken = JWT.create()
+            .withSubject(principalDetails.getUsername())
+            .withExpiresAt(new java.util.Date(System.currentTimeMillis() + 1000 * 60 *10)) // 1초 * 60 * 10 = 10분
+            .withClaim("id", principalDetails.getUser().getId())
+            .withClaim("username", principalDetails.getUser().getUsername())
+            .sign(Algorithm.HMAC512("cos"));
+
+
         super.successfulAuthentication(request, response, chain, authResult);
     }
 }

@@ -10,7 +10,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,9 +35,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 
-
     private final AuthenticationManager authenticationManager;
-
 
     // /login 요청을 하면 로그인 시도를 위해서 실행되는 함수
     // UsernamePasswordAuthenticationFilter 가 /login 요청을 가로채서
@@ -51,7 +48,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     // JWT 토큰을 만들어서 응답해주면 됨.
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+    public Authentication attemptAuthentication(HttpServletRequest request,
+        HttpServletResponse response)
         throws AuthenticationException {
 
         System.out.println("JwtAuthenticationFilter : 진입");
@@ -65,7 +63,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             e.printStackTrace();
         }
 
-        System.out.println("JwtAuthenticationFilter : "+loginRequestDto);
+        System.out.println("JwtAuthenticationFilter : " + loginRequestDto);
 
         // 유저네임패스워드 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -90,7 +88,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         System.out.println("JwtAuthenticationFilter : 인증완료");
 
         PrincipalDetails principalDetailis = (PrincipalDetails) authentication.getPrincipal();
-        System.out.println("Authentication : "+principalDetailis.getUser().getUsername());
+        System.out.println("Authentication : " + principalDetailis.getUser().getUsername());
         return authentication;
     }
 
@@ -108,12 +106,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // 이 방식이 RSA보다 더 많이 사용됨?
         String jwtToken = JWT.create()
             .withSubject(principalDetails.getUsername())
-            .withExpiresAt(new java.util.Date(System.currentTimeMillis() + 1000 * 60 *10)) // 1초 * 60 * 10 = 10분
+            .withExpiresAt(new java.util.Date(
+                System.currentTimeMillis() + 1000 * 60 * 10)) // 1초 * 60 * 10 = 10분
             .withClaim("id", principalDetails.getUser().getId())
             .withClaim("username", principalDetails.getUser().getUsername())
             .sign(Algorithm.HMAC512("cos"));
 
-
+        response.addHeader("Authorization", "Bearer " + jwtToken);
         super.successfulAuthentication(request, response, chain, authResult);
     }
 }

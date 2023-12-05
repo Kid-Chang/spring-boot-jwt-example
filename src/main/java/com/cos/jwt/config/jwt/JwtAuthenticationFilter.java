@@ -113,7 +113,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             .sign(Algorithm.HMAC512("cos"));
 
         response.addHeader("Authorization", "Bearer " + jwtToken);
-        super.successfulAuthentication(request, response, chain, authResult);
     }
 }
 
